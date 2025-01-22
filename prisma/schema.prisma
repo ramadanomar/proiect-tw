@@ -1,0 +1,108 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Admin {
+  id       String @id
+  username String @unique
+}
+
+model Student {
+  id        String   @id
+  username  String   @unique
+  name      String
+  surname   String
+  email     String?  @unique
+  phone     String?  @unique
+  address   String
+  img       String?
+  bloodType String
+  sex       UserSex
+  createdAt DateTime @default(now())
+
+  classId  Int
+  class    Class    @relation(fields: [classId], references: [id])
+  birthday DateTime
+
+  registrations Registration[]
+}
+
+model Teacher {
+  id        String   @id
+  username  String   @unique
+  name      String
+  surname   String
+  email     String?  @unique
+  phone     String?  @unique
+  address   String
+  img       String?
+  bloodType String
+  sex       UserSex
+  createdAt DateTime @default(now())
+  classes   Class[]
+  birthday  DateTime
+}
+
+model Class {
+  id       Int    @id @default(autoincrement())
+  name     String @unique
+  capacity Int
+
+  supervisorId String?
+  supervisor   Teacher?  @relation(fields: [supervisorId], references: [id])
+  students     Student[]
+
+  events        Event[]
+  announcements Announcement[]
+
+  registrations Registration[]
+}
+
+model Event {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  startTime   DateTime
+  endTime     DateTime
+
+  classId Int?
+  class   Class? @relation(fields: [classId], references: [id])
+}
+
+model Announcement {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  date        DateTime
+
+  classId Int?
+  class   Class? @relation(fields: [classId], references: [id])
+}
+
+enum UserSex {
+  MALE
+  FEMALE
+}
+
+model Registration {
+  id Int @id @default(autoincrement())
+
+  studentId String
+  student   Student @relation(fields: [studentId], references: [id])
+
+  classId Int
+  class   Class @relation(fields: [classId], references: [id])
+
+  isApproved Boolean @default(false)
+  reason     String?
+
+  isFinished Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
